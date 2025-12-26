@@ -175,8 +175,8 @@ int main() {
         }
 
         // --- встроенная команда echo ---
-        if (strncmp(buf, "echo", 4) == 0 && (buf[4] == ' ' || buf[4] == '\0')) {
-            char *args = buf + 5;
+        if (strncmp(buf, "debug", 5) == 0 && (buf[5] == ' ' || buf[5] == '\0')) {
+            char *args = buf + 6;
             if (args) printf("%s\n", args);
             add_to_history(buf);
             continue;
