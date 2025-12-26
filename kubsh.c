@@ -35,8 +35,8 @@ int main() {
             char *msg = buf + 6;
 
             // убрать кавычки если есть
-            if (msg[0] == '"' && msg[strlen(msg)-1] == '"') {
-                msg[strlen(msg)-1] = 0;
+            if (msg[0] == '"' && msg[strlen(msg) - 1] == '"') {
+                msg[strlen(msg) - 1] = 0;
                 msg++;
             }
 
@@ -55,13 +55,18 @@ int main() {
             if (!val) {
                 printf("Variable not found\n");
             } else {
-                char *copy = strdup(val);
-                char *tok = strtok(copy, ":");
-                while (tok) {
-                    printf("%s\n", tok);
-                    tok = strtok(NULL, ":");
+                // FIX: если нет ':', печатаем одной строкой
+                if (strchr(val, ':') == NULL) {
+                    printf("%s\n", val);
+                } else {
+                    char *copy = strdup(val);
+                    char *tok = strtok(copy, ":");
+                    while (tok) {
+                        printf("%s\n", tok);
+                        tok = strtok(NULL, ":");
+                    }
+                    free(copy);
                 }
-                free(copy);
             }
             continue;
         }
