@@ -1,0 +1,7 @@
+Package: kubsh
+Version: 1.0.0
+Architecture: amd64
+Maintainer: user
+Priority: optional
+Section: utils
+Description: Custom shell kubsh
