@@ -1,31 +1,59 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -std=c11
-TARGET=kubsh
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-missing-field-initializers
+FUSE_FLAGS = `pkg-config --cflags --libs fuse3`
+TARGET = kubsh
+IMAGE = tyvik/kubsh_test:master
+DOCKER_FLAGS = --privileged --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
+PACKAGE_NAME = kubsh
+VERSION = 1.0.0
+DEB_FILE = $(PACKAGE_NAME)_$(VERSION)_amd64.deb
+BUILD_DIR = build
 
-.PHONY: all run clean deb
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(SRCS:src/%.cpp=$(BUILD_DIR)/%.o)
 
 all: $(TARGET)
 
-$(TARGET): kubsh.c
-	$(CC) $(CFLAGS) -o $(TARGET) kubsh.c
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(FUSE_FLAGS) -lreadline
 
-run: $(TARGET)
-	./$(TARGET)
+$(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(FUSE_FLAGS) -c $< -o $@
 
-clean:
-	rm -f $(TARGET) *.o
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 deb: $(TARGET)
-	mkdir -p deb/DEBIAN
-	mkdir -p deb/usr/local/bin
-	cp $(TARGET) deb/usr/local/bin/
-	echo "Package: kubsh" > deb/DEBIAN/control
-	echo "Version: 1.0" >> deb/DEBIAN/control
-	echo "Section: utils" >> deb/DEBIAN/control
-	echo "Priority: optional" >> deb/DEBIAN/control
-	echo "Architecture: amd64" >> deb/DEBIAN/control
-	echo "Maintainer: YOURNAME <youremail@example.com>" >> deb/DEBIAN/control
-	echo "Description: Simple Linux shell for GNU/Linux course" >> deb/DEBIAN/control
-	dpkg-deb --build deb
-	mv deb.deb kubsh_1.0.deb
-	rm -rf deb
+	@echo "Создание .deb пакета..."
+	mkdir -p kubsh-package/DEBIAN
+	mkdir -p kubsh-package/usr/local/bin
+#	cp $(TARGET) kubsh-package/usr/local/bin/kubsh  
+	chmod +x kubsh-package/usr/local/bin/kubsh
+#	echo "Depends: libfuse3-3, libreadline8" >> kubsh-package/DEBIAN/control
+	echo "Package: kubsh" > kubsh-package/DEBIAN/control
+	echo "Version: 1.0.0" >> kubsh-package/DEBIAN/control
+	echo "Architecture: amd64" >> kubsh-package/DEBIAN/control
+	echo "Maintainer: user" >> kubsh-package/DEBIAN/control
+	echo "Priority: optional" >> kubsh-package/DEBIAN/control
+	echo "Section: utils" >> kubsh-package/DEBIAN/control
+	echo "Description: Custom shell kubsh" >> kubsh-package/DEBIAN/control
+    echo "Depends: libfuse3-3, libreadline8" >> kubsh-package/DEBIAN/control
+	
+	dpkg-deb --build kubsh-package kubsh_1.0.0_amd64.deb
+	@echo "Пакет создан: kubsh_1.0.0_amd64.deb"
+
+package: deb
+
+test: deb
+	@echo "Запуск тестов..."
+	docker run -it $(DOCKER_FLAGS) \
+		-v $(CURDIR)/$(DEB_FILE):/mnt/kubsh.deb \
+		$(IMAGE)
+
+run: $(TARGET)
+	sudo ./$(TARGET)
+
+clean:
+	rm -rf $(BUILD_DIR) $(TARGET) *.deb
+
+.PHONY: all deb test run clean
