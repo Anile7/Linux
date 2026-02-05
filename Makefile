@@ -27,7 +27,7 @@ deb: $(TARGET)
 	@echo "Создание .deb пакета..."
 	mkdir -p kubsh-package/DEBIAN
 	mkdir -p kubsh-package/usr/local/bin
-#	cp $(TARGET) kubsh-package/usr/local/bin/kubsh  
+	cp $(TARGET) kubsh-package/usr/local/bin/kubsh  
 	chmod +x kubsh-package/usr/local/bin/kubsh
 #	echo "Depends: libfuse3-3, libreadline8" >> kubsh-package/DEBIAN/control
 	echo "Package: kubsh" > kubsh-package/DEBIAN/control
