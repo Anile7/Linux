@@ -15,7 +15,7 @@ on:
       -name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -ybuild essential g++ pkg-config libfuse3-dev libreadline-dev dpkg-dev docker.io
+        sudo apt install -y build-essential g++ pkg-config libfuse3-dev libreadline-dev dpkg-dev docker.io
 
       -name: Build kubsh
       run: make all
