@@ -1,31 +1,33 @@
-name: Build and Release kubsh
+name: CI/CD Kubsh
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
+  pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    -uses: actions/scheckout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential cmake dpkg-dev
+    -name: Install dependencies
+    run: |
+      sudo apt update
+      sudo apt install -y build-essential g++ pkg-config libfuse3-dev libreadline-dev dpkg-dev docker.io
 
-      - name: Build project
-        run: |
-          make clean
-          make
-          make deb
+    -name: Build kubsh
+    run: make all
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kubsh-deb
-          path: kubsh_1.0.0_amd64.deb
+    -name: Build .deb package
+    run: make deb
+
+    -name: Run tests in Docker
+    run: make test
+
+    -name: Upload .deb as artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: kubsh-deb
+      path: kubsh_1.0.0_amd64.deb
