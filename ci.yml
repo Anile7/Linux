@@ -26,7 +26,7 @@ on:
       -name: Run tests in Docker
       run: make test
 
-      -name: Upload .debas artifact
+      -name: Upload .deb as artifact
       uses: actions/upload-artifact@v4
       with:
         name: kubsh-deb
